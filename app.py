@@ -1,6 +1,7 @@
 from typing import Tuple
 
-from flask import Flask, jsonify, request, Response
+from flask import Flask, jsonify, request, Response, redirect, url_for
+from werkzeug.utils import redirect
 import mockdb.mockdb_interface as db
 
 app = Flask(__name__)
@@ -43,7 +44,8 @@ def create_response(
 
 @app.route("/")
 def hello_world():
-    return create_response({"content": "hello world!"})
+    # return create_response({"content": "hello world!"})
+    return redirect(url_for('user',id='2'))
 
 
 @app.route("/mirror/<name>")
@@ -54,8 +56,31 @@ def mirror(name):
 
 # TODO: Implement the rest of the API here!
 
+@app.route("/users")
+def users():
+    data = db.db_state
+    return create_response(data)
+
+@app.route("/users/<id>")
+def user(id):
+    incorrect_id = True
+    data = db.db_state['users']
+    for i in data:
+        print(i)
+        if str(i['id'])==id:
+            incorrect_id = False
+            data = {'users': i} 
+            break  
+             
+    if not incorrect_id:
+        return create_response(data)
+    else:
+        return create_response(status=404, message='id nao existe')
+
+
 """
 ~~~~~~~~~~~~ END API ~~~~~~~~~~~~
 """
 if __name__ == "__main__":
-    app.run(debug=True)
+    # app.run(debug=True)
+    app.run(host='0.0.0.0', port=81)
